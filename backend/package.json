@@ -1,13 +1,15 @@
 {
 	"name": "@agiri/backend",
 	"private": true,
+	"main": "dist/index.js",
 	"scripts": {
 		"build": "tsc -p tsconfig.build.json",
 		"dev": "bun run --watch src/index.ts",
 		"lint": "bun lint:type && bun lint:biome:check",
 		"lint:type": "tsc -p tsconfig.json",
 		"lint:biome:check": "biome check .",
-		"test": "vitest"
+		"test": "vitest",
+		"seed": "GCLOUD_PROJECT=agiri-dev FIRESTORE_EMULATOR_HOST=localhost:8080 bun run scripts/seed.ts"
 	},
 	"dependencies": {
 		"@agiri/shared": "*",

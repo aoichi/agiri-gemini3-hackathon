@@ -21,6 +21,7 @@ out
 .env
 .env.*
 !.env.sample
+.secret.local
 
 agiri-spec.md
 
