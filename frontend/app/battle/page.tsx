@@ -274,21 +274,6 @@ export default function BattlePage() {
 				</div>
 			)}
 
-			{/* Bottom nav */}
-			<div className="flex items-center justify-around py-3 border-t border-gray-800">
-				<button
-					type="button"
-					onClick={() => router.push("/main")}
-					className="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition-opacity"
-				>
-					<FluentEmoji name="house" size={28} />
-					<span className="text-[10px] text-gray-400">ホーム</span>
-				</button>
-				<button type="button" className="flex flex-col items-center gap-1">
-					<FluentEmoji name="crossed-swords" size={28} />
-					<span className="text-[10px] text-amber-500">バトル</span>
-				</button>
-			</div>
 		</div>
 	);
 }
