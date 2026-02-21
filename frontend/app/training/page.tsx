@@ -1,14 +1,12 @@
 "use client";
 
+import type { AgentProfile } from "@agiri/shared";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import FluentEmoji from "@/components/FluentEmoji";
-import {
-	mockAgent,
-	mockAnalyzeAndUpdateBrain,
-	mockGenerateOdai,
-	mockScoreBoke,
-} from "@/lib/mock";
+import { useAuth } from "@/lib/auth";
+import { getAgent } from "@/lib/firestore";
+import { generateOdai, scoreBoke, analyzeAndUpdateBrain } from "@/lib/api";
 
 type Phase = "loading" | "input" | "scoring" | "scored" | "analyzing" | "done";
 
@@ -21,17 +19,19 @@ interface QuestionResult {
 
 export default function Training() {
 	const router = useRouter();
+	const { uid, loading: authLoading } = useAuth();
+	const [agent, setAgent] = useState<AgentProfile | null>(null);
 	const [phase, setPhase] = useState<Phase>("loading");
 	const [odaiList, setOdaiList] = useState<string[]>([]);
 	const [currentQ, setCurrentQ] = useState(0);
 	const [boke, setBoke] = useState("");
-	const [, setResults] = useState<QuestionResult[]>([]);
+	const [results, setResults] = useState<QuestionResult[]>([]);
 	const [currentScore, setCurrentScore] = useState<{
 		score: number;
 		advice: string;
 	} | null>(null);
 	const [brainUpdate, setBrainUpdate] = useState<{
-		newTraits: string[];
+		newTraits: unknown[];
 		levelUp: boolean;
 	} | null>(null);
 
@@ -39,15 +39,22 @@ export default function Training() {
 
 	const startTraining = async () => {
 		setPhase("loading");
-		const res = await mockGenerateOdai();
+		const res = await generateOdai();
 		setOdaiList(res.odaiList);
 		setPhase("input");
 	};
 
 	const handleSubmit = async () => {
-		if (!boke.trim()) return;
+		if (!boke.trim() || !agent) return;
 		setPhase("scoring");
-		const res = await mockScoreBoke(boke);
+		const res = await scoreBoke({
+			odai: odaiList[currentQ],
+			boke,
+			agentProfile: {
+				style: agent.style,
+				brainData: agent.brainData,
+			},
+		});
 		setCurrentScore(res);
 		setResults((prev) => [
 			...prev,
@@ -63,21 +70,44 @@ export default function Training() {
 			setCurrentScore(null);
 			setPhase("input");
 		} else {
+			if (!uid) return;
 			setPhase("analyzing");
-			const res = await mockAnalyzeAndUpdateBrain();
+			const allResults = [
+				...results,
+				{ odai: odaiList[currentQ], boke, score: currentScore?.score ?? 0 },
+			];
+			const res = await analyzeAndUpdateBrain({
+				uid,
+				session: allResults.map((r) => ({
+					odai: r.odai,
+					boke: r.boke,
+					score: r.score,
+				})),
+			});
 			setBrainUpdate(res);
+			if (agent) {
+				setAgent({ ...agent, level: res.levelUp ? agent.level + 1 : agent.level });
+			}
 			setPhase("done");
 		}
 	};
 
 	const initialized = useRef(false);
 	useEffect(() => {
-		if (!initialized.current) {
-			initialized.current = true;
+		if (authLoading || !uid) return;
+		if (initialized.current) return;
+		initialized.current = true;
+
+		getAgent(uid).then((a) => {
+			if (!a) {
+				router.replace("/create");
+				return;
+			}
+			setAgent(a);
 			startTraining();
-		}
+		}).catch(console.error);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [uid, authLoading]);
 
 	return (
 		<div className="flex flex-col min-h-screen">
@@ -140,7 +170,7 @@ export default function Training() {
 									<h3 className="text-white font-bold">採点結果</h3>
 									<span className="text-2xl font-extrabold text-amber-500">
 										{currentScore.score}{" "}
-										<span className="text-base text-gray-400">/ 100</span>
+										<span className="text-base text-gray-400">/ 10</span>
 									</span>
 								</div>
 								<p className="text-gray-300 text-sm leading-relaxed">
@@ -211,24 +241,34 @@ export default function Training() {
 							修行完了!
 						</h2>
 
-						{brainUpdate.levelUp && (
+						{brainUpdate.levelUp && agent && (
 							<div className="px-4 py-2 bg-green-500/20 border border-green-500/40 rounded-full mb-4">
 								<p className="text-green-400 font-bold text-sm">
-									レベルアップ! Lv.{mockAgent.level} → Lv.
-									{mockAgent.level + 1}
+									レベルアップ! Lv.{agent.level - 1} → Lv.
+									{agent.level}
 								</p>
 							</div>
 						)}
 
 						<div className="flex flex-wrap gap-2 justify-center">
-							{brainUpdate.newTraits.map((trait) => (
-								<span
-									key={trait}
-									className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-400 text-sm"
-								>
-									{trait}
-								</span>
-							))}
+							{brainUpdate.newTraits.map((trait) => {
+								let label: string;
+								if (typeof trait === 'string') {
+									label = trait;
+								} else if (trait && typeof trait === 'object' && '名前' in trait) {
+									label = String((trait as Record<string, unknown>)['名前']);
+								} else {
+									label = String(trait);
+								}
+								return (
+									<span
+										key={label}
+										className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-400 text-sm"
+									>
+										{label}
+									</span>
+								);
+							})}
 						</div>
 					</div>
 

@@ -1,26 +1,39 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import type { AgentProfile, Battle } from "@agiri/shared";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FluentEmoji from "@/components/FluentEmoji";
-import { mockAgent, mockBattleResult, STYLE_ICONS } from "@/lib/mock";
+import { STYLE_ICONS } from "@/lib/mock";
+import { useAuth } from "@/lib/auth";
+import { getAgent, subscribeToBattle } from "@/lib/firestore";
 
 export default function BattleResult() {
 	const router = useRouter();
+	const params = useParams();
+	const battleId = params.battleId as string;
+	const { uid, loading: authLoading } = useAuth();
+	const [agent, setAgent] = useState<AgentProfile | null>(null);
+	const [battle, setBattle] = useState<Battle | null>(null);
 	const [showContent, setShowContent] = useState(false);
 	const [showDetails, setShowDetails] = useState(false);
 	const [showLevelUp, setShowLevelUp] = useState(false);
 
-	const battle = mockBattleResult;
-	const playerResult = battle.rounds[0]?.results.find(
-		(r) => r.uid === "player",
-	);
-	const opponentResult = battle.rounds[0]?.results.find(
-		(r) => r.uid === "opponent",
-	);
-	const isWinner = battle.winnerUid === "player";
+	useEffect(() => {
+		if (authLoading || !uid) return;
+		getAgent(uid).then(setAgent).catch(console.error);
+	}, [uid, authLoading]);
 
 	useEffect(() => {
+		if (!battleId) return;
+		const unsubscribe = subscribeToBattle(battleId, (b) => {
+			setBattle(b);
+		});
+		return unsubscribe;
+	}, [battleId]);
+
+	useEffect(() => {
+		if (!battle) return;
 		const t1 = setTimeout(() => setShowContent(true), 300);
 		const t2 = setTimeout(() => setShowDetails(true), 800);
 		const t3 = setTimeout(() => setShowLevelUp(true), 1500);
@@ -29,7 +42,26 @@ export default function BattleResult() {
 			clearTimeout(t2);
 			clearTimeout(t3);
 		};
-	}, []);
+	}, [battle]);
+
+	if (!battle || !uid || !agent) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
+
+	const playerResult = battle.rounds[0]?.results.find(
+		(r) => r.uid === uid,
+	);
+	const opponentResult = battle.rounds[0]?.results.find(
+		(r) => r.uid !== uid,
+	);
+	const isWinner = battle.winnerUid === uid;
+	const playerScore = battle.totalScores[uid] ?? 0;
+	const opponentUid = Object.keys(battle.totalScores).find((k) => k !== uid);
+	const opponentScore = opponentUid ? battle.totalScores[opponentUid] ?? 0 : 0;
 
 	return (
 		<div className="flex flex-col min-h-screen">
@@ -59,7 +91,7 @@ export default function BattleResult() {
 						className={`p-4 rounded-2xl text-center border ${isWinner ? "bg-amber-500/10 border-amber-500/40" : "bg-gray-800 border-gray-700"}`}
 					>
 						<div className="flex items-center justify-center gap-1 mb-2">
-							<FluentEmoji name={STYLE_ICONS[mockAgent.style]} size={20} />
+							<FluentEmoji name={STYLE_ICONS[agent.style]} size={20} />
 							<span className="text-white text-sm font-bold">
 								{playerResult?.agentName}
 							</span>
@@ -67,7 +99,7 @@ export default function BattleResult() {
 						<p
 							className={`text-4xl font-extrabold ${isWinner ? "text-amber-500" : "text-white"}`}
 						>
-							{battle.totalScores.player}
+							{playerScore}
 						</p>
 						<p className="text-gray-400 text-xs mt-1">pts</p>
 					</div>
@@ -85,7 +117,7 @@ export default function BattleResult() {
 						<p
 							className={`text-4xl font-extrabold ${!isWinner ? "text-amber-500" : "text-white"}`}
 						>
-							{battle.totalScores.opponent}
+							{opponentScore}
 						</p>
 						<p className="text-gray-400 text-xs mt-1">pts</p>
 					</div>
@@ -155,12 +187,11 @@ export default function BattleResult() {
 				</div>
 
 				{/* Level up */}
-				{showLevelUp && (
+				{showLevelUp && isWinner && (
 					<div className="animate-bounce-in mb-6">
 						<div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 text-center">
-							<p className="text-green-400 font-bold">レベルアップ!</p>
-							<p className="text-green-300 text-sm">
-								Lv.{mockAgent.level} → Lv.{mockAgent.level + 1}
+							<p className="text-green-400 font-bold">
+								{isWinner ? "勝利!" : "惜しい!"}
 							</p>
 						</div>
 					</div>

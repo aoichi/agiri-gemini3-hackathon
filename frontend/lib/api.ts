@@ -1,4 +1,4 @@
-import { getAuth } from 'firebase/auth';
+import { auth } from './firebase';
 import type {
 	ScoreBokeRequest,
 	ScoreBokeResponse,
@@ -11,7 +11,9 @@ import type {
 const BASE_URL = process.env.NEXT_PUBLIC_FUNCTIONS_BASE_URL;
 
 async function callFunction<T>(name: string, body: object): Promise<T> {
-	const token = await getAuth().currentUser?.getIdToken();
+	const token = await auth.currentUser?.getIdToken();
+	if (!token) throw new Error('Not authenticated');
+
 	const res = await fetch(`${BASE_URL}/${name}`, {
 		method: 'POST',
 		headers: {
@@ -20,7 +22,12 @@ async function callFunction<T>(name: string, body: object): Promise<T> {
 		},
 		body: JSON.stringify(body),
 	});
-	if (!res.ok) throw new Error(`${name} failed: ${res.status}`);
+
+	if (!res.ok) {
+		const errorBody = await res.json().catch(() => null);
+		throw new Error(errorBody?.error ?? `${name} failed: ${res.status}`);
+	}
+
 	return res.json();
 }
 
@@ -32,5 +39,5 @@ export const scoreBoke = (body: ScoreBokeRequest) =>
 export const analyzeAndUpdateBrain = (body: AnalyzeRequest) =>
 	callFunction<AnalyzeResponse>('analyzeAndUpdateBrain', body);
 
-export const runBattle = (uid: string) =>
-	callFunction<RunBattleResponse>('runBattle', { uid });
+export const runBattle = () =>
+	callFunction<RunBattleResponse>('runBattle', {});

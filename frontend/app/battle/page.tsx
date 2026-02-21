@@ -1,39 +1,51 @@
 "use client";
 
-import type { Battle } from "@agiri/shared";
+import type { AgentProfile, Battle } from "@agiri/shared";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FluentEmoji from "@/components/FluentEmoji";
-import {
-	mockAgent,
-	mockBattleStatusSequence,
-	mockOpponent,
-	mockRunBattle,
-	STYLE_FACE,
-} from "@/lib/mock";
+import { STYLE_FACE } from "@/lib/mock";
+import { useAuth } from "@/lib/auth";
+import { getAgent } from "@/lib/firestore";
+import { runBattle } from "@/lib/api";
+import { subscribeToBattle } from "@/lib/firestore";
 
-type Phase = "ready" | "battling" | "done";
+type Phase = "ready" | "battling" | "done" | "error";
 
 export default function BattlePage() {
 	const router = useRouter();
+	const { uid, loading: authLoading } = useAuth();
+	const [agent, setAgent] = useState<AgentProfile | null>(null);
 	const [phase, setPhase] = useState<Phase>("ready");
 	const [battleState, setBattleState] = useState<Partial<Battle> | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (authLoading || !uid) return;
+		getAgent(uid).then(setAgent).catch(console.error);
+	}, [uid, authLoading]);
 
 	const handleStart = useCallback(async () => {
 		setPhase("battling");
-		const { battleId } = await mockRunBattle();
+		setErrorMsg(null);
+		try {
+			const { battleId } = await runBattle();
 
-		const cleanup = mockBattleStatusSequence((update) => {
-			setBattleState(update);
-			if (update.status === "done") {
-				setPhase("done");
-				setTimeout(() => {
-					router.push(`/battle/result/${battleId}`);
-				}, 1500);
-			}
-		});
-
-		return cleanup;
+			const unsubscribe = subscribeToBattle(battleId, (battle) => {
+				setBattleState(battle);
+				if (battle.status === "done") {
+					unsubscribe();
+					setPhase("done");
+					setTimeout(() => {
+						router.push(`/battle/result/${battleId}`);
+					}, 1500);
+				}
+			});
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : "バトル開始に失敗しました";
+			setErrorMsg(msg);
+			setPhase("error");
+		}
 	}, [router]);
 
 	const getRoundStatus = (roundNum: number) => {
@@ -66,17 +78,18 @@ export default function BattlePage() {
 
 			{/* VS Display - centered vertically */}
 			<div className="flex-1 flex flex-col justify-center">
+				{agent && (
 				<div className="flex items-center justify-center gap-4 px-5">
 					{/* Player */}
 					<div className="flex flex-col items-center">
 						<div className="mb-2">
-							<FluentEmoji name={STYLE_FACE[mockAgent.style]} size={80} />
+							<FluentEmoji name={STYLE_FACE[agent.style]} size={80} />
 						</div>
 						<p className="text-white font-bold text-sm text-center leading-tight">
-							{mockAgent.name}
+							{agent.name}
 						</p>
 						<p className="text-amber-500 text-xs font-bold mt-2">
-							Lv.{mockAgent.level}
+							Lv.{agent.level}
 						</p>
 					</div>
 
@@ -86,16 +99,17 @@ export default function BattlePage() {
 					{/* Opponent */}
 					<div className="flex flex-col items-center">
 						<div className="mb-2">
-							<FluentEmoji name={STYLE_FACE[mockOpponent.style]} size={80} />
+							<FluentEmoji name="question-mark" size={80} />
 						</div>
 						<p className="text-white font-bold text-sm text-center leading-tight">
-							{mockOpponent.name}
+							???
 						</p>
 						<p className="text-gray-400 text-xs font-bold mt-2">
-							Lv.{mockOpponent.level}
+							&nbsp;
 						</p>
 					</div>
 				</div>
+				)}
 
 				{/* Battle progress - centered */}
 				{phase !== "ready" && (
@@ -160,8 +174,17 @@ export default function BattlePage() {
 				)}
 			</div>
 
+			{/* Error message */}
+			{phase === "error" && errorMsg && (
+				<div className="px-5 pb-2">
+					<div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-center">
+						<p className="text-red-400 text-sm">{errorMsg}</p>
+					</div>
+				</div>
+			)}
+
 			{/* Start button - pinned to bottom above nav */}
-			{phase === "ready" && (
+			{(phase === "ready" || phase === "error") && (
 				<div className="px-5 pb-4">
 					<button
 						type="button"

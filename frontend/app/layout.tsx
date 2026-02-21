@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { AuthProvider } from '@/lib/auth';
 
 export const metadata: Metadata = {
 	title: 'A喜利',
@@ -21,9 +22,11 @@ export default function RootLayout({
 	return (
 		<html lang="ja">
 			<body className="bg-gray-950 min-h-screen flex justify-center">
-				<div className="w-full max-w-sm bg-gray-900 min-h-screen relative overflow-hidden">
-					{children}
-				</div>
+				<AuthProvider>
+					<div className="w-full max-w-sm bg-gray-900 min-h-screen relative overflow-hidden">
+						{children}
+					</div>
+				</AuthProvider>
 			</body>
 		</html>
 	);

@@ -223,9 +223,17 @@ export const runBattle = onRequest(
 					.sort((a, b) => b.score - a.score)[0]?.boke ?? '';
 
 			// 8. Generate winner image (best effort)
-			const winnerImageUrl = await generateImage(
-				`大喜利の優勝作品をイメージした楽しいイラスト。テーマ: ${winnerBoke}`,
-			);
+			let winnerImageUrl: string | null = null;
+			try {
+				const imageData = await generateImage(
+					`大喜利の優勝作品をイメージした楽しいイラスト。テーマ: ${winnerBoke}`,
+				);
+				if (imageData && imageData.length < 1_000_000) {
+					winnerImageUrl = imageData;
+				}
+			} catch (e) {
+				console.warn('Image generation failed, skipping:', e);
+			}
 
 			// 9. Final update
 			await battleRef.update({

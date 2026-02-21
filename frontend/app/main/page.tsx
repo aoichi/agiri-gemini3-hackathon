@@ -1,13 +1,39 @@
 "use client";
 
+import type { AgentProfile } from "@agiri/shared";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import FluentEmoji from "@/components/FluentEmoji";
-import { mockAgent, STYLE_FACE, STYLE_ICONS } from "@/lib/mock";
+import { STYLE_FACE, STYLE_ICONS } from "@/lib/mock";
+import { useAuth } from "@/lib/auth";
+import { getAgent } from "@/lib/firestore";
 
 export default function Main() {
 	const router = useRouter();
-	const agent = mockAgent;
+	const { uid, loading: authLoading } = useAuth();
+	const [agent, setAgent] = useState<AgentProfile | null>(null);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		if (authLoading || !uid) return;
+		getAgent(uid).then((a) => {
+			if (!a) {
+				router.replace("/create");
+				return;
+			}
+			setAgent(a);
+			setLoading(false);
+		}).catch(console.error);
+	}, [uid, authLoading, router]);
+
+	if (loading || !agent) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex flex-col min-h-screen">
