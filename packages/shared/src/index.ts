@@ -11,4 +11,6 @@ export type {
 	GenerateOdaiResponse,
 	RunBattleRequest,
 	RunBattleResponse,
+	GenerateBattleImageRequest,
+	GenerateBattleImageResponse,
 } from './types';

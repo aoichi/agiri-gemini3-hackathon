@@ -8,7 +8,7 @@ import type {
 	Judge,
 	DummyAgent,
 } from '@agiri/shared';
-import { geminiApiKey, generateJsonResponse, generateImage } from '../lib/gemini';
+import { geminiApiKey, generateJsonResponse } from '../lib/gemini';
 import { verifyAuth } from '../lib/auth';
 
 interface BokeResult {
@@ -239,26 +239,13 @@ export const runBattle = onRequest(
 					.filter((r) => r.uid === winnerUid)
 					.sort((a, b) => b.score - a.score)[0]?.boke ?? '';
 
-			// 8. Generate winner image (best effort)
-			let winnerImageUrl: string | null = null;
-			try {
-				const imageData = await generateImage(
-					`大喜利の優勝作品をイメージした楽しいイラスト。テーマ: ${winnerBoke}`,
-				);
-				if (imageData && imageData.length < 1_000_000) {
-					winnerImageUrl = imageData;
-				}
-			} catch (e) {
-				console.warn('Image generation failed, skipping:', e);
-			}
-
-			// 9. Final update
+			// 8. Final update
 			await battleRef.update({
 				status: 'done',
 				totalScores,
 				winnerUid,
 				winnerBoke,
-				winnerImageUrl,
+				winnerImageUrl: null,
 			});
 
 			// 10. Update user stats

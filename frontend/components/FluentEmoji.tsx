@@ -34,6 +34,7 @@ const EMOJI_MAP: Record<string, string> = {
   // ─── nav / ui icons ───
   'back-arrow':      colorSvg('Left%20arrow', 'left_arrow'),
   wrench:            png3d('Wrench', 'wrench'),
+  paintbrush:        png3d('Paintbrush', 'paintbrush'),
 };
 
 interface FluentEmojiProps {

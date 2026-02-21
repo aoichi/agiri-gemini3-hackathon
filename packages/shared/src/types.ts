@@ -103,3 +103,11 @@ export interface RunBattleRequest {
 export interface RunBattleResponse {
 	battleId: string;
 }
+
+export interface GenerateBattleImageRequest {
+	battleId: string;
+}
+
+export interface GenerateBattleImageResponse {
+	imageUrl: string | null;
+}

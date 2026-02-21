@@ -98,7 +98,10 @@ export default function BattlePage() {
 					{/* Opponent */}
 					<div className="flex flex-col items-center">
 						<div className="mb-2">
-							<FluentEmoji name={battleState?.opponentName ? "robot" : "question-mark"} size={80} />
+							<FluentEmoji
+								name={battleState?.opponentStyle ? STYLE_FACE[battleState.opponentStyle] : "alien"}
+								size={80}
+							/>
 						</div>
 						<p className="text-white font-bold text-sm text-center leading-tight">
 							{battleState?.opponentName ?? "???"}
@@ -114,7 +117,9 @@ export default function BattlePage() {
 				{phase !== "ready" && (
 					<div className="px-5 mt-8 animate-fade-in">
 						<p className="text-gray-300 font-bold text-sm mb-4">
-							{phase === "done" ? "バトル終了!" : "ラウンド進行中..."}
+							{phase === "done" || battleState?.status === "round2_done"
+								? "バトル終了!"
+								: "ラウンド進行中..."}
 						</p>
 
 						{[1, 2].map((roundNum) => {
@@ -257,7 +262,7 @@ export default function BattlePage() {
 			)}
 
 			{/* Next button after battle ends */}
-			{phase === "done" && battleId && (
+			{(phase === "done" || battleState?.status === "round2_done") && battleId && (
 				<div className="px-5 pb-4 animate-fade-in">
 					<button
 						type="button"

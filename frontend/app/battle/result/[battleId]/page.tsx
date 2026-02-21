@@ -2,12 +2,13 @@
 
 import type { AgentProfile, Battle } from "@agiri/shared";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BrainLoader from "@/components/BrainLoader";
 import FluentEmoji from "@/components/FluentEmoji";
 import { STYLE_ICONS } from "@/lib/mock";
 import { useAuth } from "@/lib/auth";
 import { getAgent, subscribeToBattle } from "@/lib/firestore";
+import { generateBattleImage } from "@/lib/api";
 
 export default function BattleResult() {
 	const router = useRouter();
@@ -18,6 +19,9 @@ export default function BattleResult() {
 	const [battle, setBattle] = useState<Battle | null>(null);
 	const [showContent, setShowContent] = useState(false);
 	const [showDetails, setShowDetails] = useState(false);
+	const [imageLoading, setImageLoading] = useState(false);
+	const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+	const imageRequested = useRef(false);
 
 	useEffect(() => {
 		if (authLoading || !uid) return;
@@ -41,6 +45,25 @@ export default function BattleResult() {
 			clearTimeout(t2);
 		};
 	}, [battle]);
+
+	useEffect(() => {
+		if (
+			!battle ||
+			!battleId ||
+			battle.winnerImageUrl ||
+			!battle.winnerBoke ||
+			imageRequested.current
+		)
+			return;
+		imageRequested.current = true;
+		setImageLoading(true);
+		generateBattleImage({ battleId })
+			.then((res) => {
+				if (res.imageUrl) setGeneratedImage(res.imageUrl);
+			})
+			.catch(console.error)
+			.finally(() => setImageLoading(false));
+	}, [battle, battleId]);
 
 	if (!battle || !uid || !agent) {
 		return (
@@ -121,30 +144,42 @@ export default function BattleResult() {
 					</div>
 				</div>
 
-				{/* Winner image or fallback */}
+				{/* Best Boke of the Match */}
 				<div
 					className={`mb-6 transition-all duration-700 delay-300 ${showDetails ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
 				>
-					{battle.winnerImageUrl ? (
-						<div className="rounded-2xl overflow-hidden">
-							{/* eslint-disable-next-line @next/next/no-img-element */}
-							<img
-								src={battle.winnerImageUrl}
-								alt="Winner illustration"
-								className="w-full h-48 object-cover"
-							/>
-						</div>
-					) : (
-						<div className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-2xl p-6 text-center">
-							<div className="flex justify-center mb-3">
-								<FluentEmoji name="party-popper" size={88} />
+					<div className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-2xl p-6 text-center">
+						<p className="text-gray-400 text-sm mb-2">
+							Best Boke of the Match
+						</p>
+						<p className="text-white font-bold text-lg mb-4">
+							「{battle.winnerBoke}」
+						</p>
+
+						{battle.winnerImageUrl || generatedImage ? (
+							<div className="rounded-xl overflow-hidden animate-fade-in">
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								<img
+									src={battle.winnerImageUrl ?? generatedImage ?? ""}
+									alt="Winner illustration"
+									className="w-full h-48 object-cover"
+								/>
 							</div>
-							<p className="text-white font-bold">「{battle.winnerBoke}」</p>
-							<p className="text-gray-400 text-sm mt-2">
-								Best Boke of the Match
-							</p>
-						</div>
-					)}
+						) : imageLoading ? (
+							<div className="flex flex-col items-center gap-2 py-4 animate-fade-in">
+								<span className="animate-bounce">
+									<FluentEmoji name="paintbrush" size={48} />
+								</span>
+								<p className="text-gray-400 text-xs">
+									イラストを描いています...
+								</p>
+							</div>
+						) : (
+							<div className="flex justify-center">
+								<FluentEmoji name="party-popper" size={64} />
+							</div>
+						)}
+					</div>
 				</div>
 
 				{/* Round details */}

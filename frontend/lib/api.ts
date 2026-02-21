@@ -6,6 +6,8 @@ import type {
 	AnalyzeResponse,
 	GenerateOdaiResponse,
 	RunBattleResponse,
+	GenerateBattleImageRequest,
+	GenerateBattleImageResponse,
 } from '@agiri/shared';
 
 const BASE_URL = process.env.NEXT_PUBLIC_FUNCTIONS_BASE_URL;
@@ -41,3 +43,6 @@ export const analyzeAndUpdateBrain = (body: AnalyzeRequest) =>
 
 export const runBattle = () =>
 	callFunction<RunBattleResponse>('runBattle', {});
+
+export const generateBattleImage = (body: GenerateBattleImageRequest) =>
+	callFunction<GenerateBattleImageResponse>('generateBattleImage', body);
