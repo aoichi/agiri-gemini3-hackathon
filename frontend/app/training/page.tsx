@@ -3,6 +3,7 @@
 import type { AgentProfile } from "@agiri/shared";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import BrainLoader from "@/components/BrainLoader";
 import FluentEmoji from "@/components/FluentEmoji";
 import { useAuth } from "@/lib/auth";
 import { getAgent } from "@/lib/firestore";
@@ -129,8 +130,10 @@ export default function Training() {
 			{/* Loading - centered */}
 			{phase === "loading" && (
 				<div className="flex-1 flex flex-col items-center justify-center px-5">
-					<div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-					<p className="text-gray-400 mt-4 text-sm">お題を準備中...</p>
+					<BrainLoader
+						message="お題を準備中"
+						subMessage="脳みそフル回転でお題を考えてます"
+					/>
 				</div>
 			)}
 
@@ -204,10 +207,11 @@ export default function Training() {
 								}`}
 							>
 								{phase === "scoring" ? (
-									<span className="flex items-center justify-center gap-2">
-										<span className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-										採点中...
-									</span>
+									<BrainLoader
+										compact
+										emoji="magnifying-glass-tilted-left"
+										message="採点中"
+									/>
 								) : (
 									"回答する"
 								)}
@@ -220,13 +224,11 @@ export default function Training() {
 			{/* Analyzing - centered */}
 			{phase === "analyzing" && (
 				<div className="flex-1 flex flex-col items-center justify-center px-5">
-					<div className="mb-4 animate-bounce">
-						<FluentEmoji name="brain" size={88} />
-					</div>
-					<p className="text-amber-500 font-bold text-lg">脳みそを分析中...</p>
-					<p className="text-gray-400 text-sm mt-2">
-						あなたの回答パターンを学習しています
-					</p>
+					<BrainLoader
+						size={88}
+						message="脳みそを分析中"
+						subMessage="あなたの回答パターンを学習しています"
+					/>
 				</div>
 			)}
 

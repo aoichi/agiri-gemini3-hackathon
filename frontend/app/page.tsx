@@ -6,6 +6,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth';
 import { getAgent } from '@/lib/firestore';
+import BrainLoader from '@/components/BrainLoader';
 
 export default function Root() {
 	const router = useRouter();
@@ -30,7 +31,7 @@ export default function Root() {
 
 	return (
 		<div className="min-h-screen bg-gray-950 flex items-center justify-center">
-			<div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+			<BrainLoader message="起動中" subMessage="脳みそを起こしています" />
 		</div>
 	);
 }

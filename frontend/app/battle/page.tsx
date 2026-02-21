@@ -148,7 +148,9 @@ export default function BattlePage() {
 											<span className="text-green-400 text-lg">✓</span>
 										)}
 										{status === "thinking" && (
-											<span className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+											<span className="animate-brain-think inline-block">
+												<FluentEmoji name="brain" size={20} />
+											</span>
 										)}
 										{status === "pending" && (
 											<span className="text-gray-600 text-lg">○</span>
@@ -181,7 +183,9 @@ export default function BattlePage() {
 												</div>
 											) : battleState?.currentOdai ? (
 												<p className="text-gray-500 text-sm flex items-center gap-1">
-													<span className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
+													<span className="animate-brain-think inline-block">
+														<FluentEmoji name="brain" size={14} />
+													</span>
 													ボケを考え中...
 												</p>
 											) : (

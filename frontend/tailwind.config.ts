@@ -18,6 +18,9 @@ const config: Config = {
         "scale-in": "scaleIn 0.3s ease-out forwards",
         "bounce-in": "bounceIn 0.6s ease-out forwards",
         "dot-pulse": "dotPulse 1.4s infinite ease-in-out both",
+        "brain-think": "brainThink 2s ease-in-out infinite",
+        "twinkle": "twinkle 2s ease-in-out infinite",
+        "orbit": "orbit 4s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -41,6 +44,20 @@ const config: Config = {
         dotPulse: {
           "0%, 80%, 100%": { transform: "scale(0.6)", opacity: "0.4" },
           "40%": { transform: "scale(1)", opacity: "1" },
+        },
+        brainThink: {
+          "0%, 100%": { transform: "scale(1) rotate(0deg)" },
+          "25%": { transform: "scale(1.08) rotate(-3deg)" },
+          "50%": { transform: "scale(1) rotate(0deg)" },
+          "75%": { transform: "scale(1.08) rotate(3deg)" },
+        },
+        twinkle: {
+          "0%, 100%": { opacity: "0", transform: "scale(0.5)" },
+          "50%": { opacity: "1", transform: "scale(1)" },
+        },
+        orbit: {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
         },
       },
     },

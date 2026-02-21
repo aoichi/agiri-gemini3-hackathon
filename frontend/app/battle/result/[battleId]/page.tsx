@@ -3,6 +3,7 @@
 import type { AgentProfile, Battle } from "@agiri/shared";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import BrainLoader from "@/components/BrainLoader";
 import FluentEmoji from "@/components/FluentEmoji";
 import { STYLE_ICONS } from "@/lib/mock";
 import { useAuth } from "@/lib/auth";
@@ -47,7 +48,7 @@ export default function BattleResult() {
 	if (!battle || !uid || !agent) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
-				<div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+				<BrainLoader message="結果を取得中" />
 			</div>
 		);
 	}
