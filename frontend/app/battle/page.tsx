@@ -99,10 +99,10 @@ export default function BattlePage() {
 					{/* Opponent */}
 					<div className="flex flex-col items-center">
 						<div className="mb-2">
-							<FluentEmoji name="question-mark" size={80} />
+							<FluentEmoji name={battleState?.opponentName ? "robot" : "question-mark"} size={80} />
 						</div>
 						<p className="text-white font-bold text-sm text-center leading-tight">
-							???
+							{battleState?.opponentName ?? "???"}
 						</p>
 						<p className="text-gray-400 text-xs font-bold mt-2">
 							&nbsp;
@@ -123,6 +123,9 @@ export default function BattlePage() {
 							const round = battleState?.rounds?.find(
 								(r) => r.roundNumber === roundNum,
 							);
+							const isCurrentRound =
+								status === "thinking" &&
+								battleState?.currentRound === roundNum;
 
 							return (
 								<div
@@ -152,19 +155,73 @@ export default function BattlePage() {
 										)}
 									</div>
 
-									{status === "thinking" && (
+									{status === "thinking" && !isCurrentRound && (
 										<p className="text-gray-500 text-sm">思考中...</p>
 									)}
 
+									{isCurrentRound && (
+										<div className="space-y-2 animate-fade-in">
+											{battleState?.currentOdai && (
+												<div className="p-2 bg-gray-700/50 rounded-xl">
+													<p className="text-gray-400 text-xs mb-1">お題</p>
+													<p className="text-white text-sm font-bold">
+														{battleState.currentOdai}
+													</p>
+												</div>
+											)}
+											{battleState?.currentThought ? (
+												<div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+													<p className="text-amber-500 text-xs mb-1 flex items-center gap-1">
+														💭 AIの思考
+													</p>
+													<p className="text-gray-300 text-sm italic">
+														{battleState.currentThought}
+													</p>
+													<p className="text-gray-500 text-xs mt-1">審査中...</p>
+												</div>
+											) : battleState?.currentOdai ? (
+												<p className="text-gray-500 text-sm flex items-center gap-1">
+													<span className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
+													ボケを考え中...
+												</p>
+											) : (
+												<p className="text-gray-500 text-sm">お題を生成中...</p>
+											)}
+										</div>
+									)}
+
 									{status === "done" && round && (
-										<div className="animate-fade-in">
-											<p className="text-gray-300 text-sm flex items-center gap-1">
-												<FluentEmoji
-													name="magnifying-glass-tilted-left"
-													size={16}
-												/>
-												「{round.results[0]?.intermediateThought}」
-											</p>
+										<div className="space-y-3 animate-fade-in">
+											<div className="p-2 bg-gray-700/50 rounded-xl">
+												<p className="text-gray-400 text-xs mb-1">お題</p>
+												<p className="text-white text-sm font-bold">
+													{round.odai}
+												</p>
+											</div>
+
+											{round.results.map((result) => (
+												<div
+													key={result.uid}
+													className="p-2 bg-gray-700/30 rounded-xl"
+												>
+													<div className="flex items-center justify-between mb-1">
+														<p className="text-gray-400 text-xs font-bold">
+															{result.agentName}
+														</p>
+														<span className="text-amber-500 text-xs font-bold">
+															{result.score}点
+														</span>
+													</div>
+													<p className="text-white text-sm">
+														「{result.boke}」
+													</p>
+													{result.judgeComments && (
+														<p className="text-gray-500 text-xs mt-1">
+															{result.judgeComments}
+														</p>
+													)}
+												</div>
+											))}
 										</div>
 									)}
 								</div>

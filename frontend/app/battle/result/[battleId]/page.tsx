@@ -109,7 +109,7 @@ export default function BattleResult() {
 						className={`p-4 rounded-2xl text-center border ${!isWinner ? "bg-amber-500/10 border-amber-500/40" : "bg-gray-800 border-gray-700"}`}
 					>
 						<div className="flex items-center justify-center gap-1 mb-2">
-							<FluentEmoji name="collision" size={28} />
+							<FluentEmoji name="robot" size={20} />
 							<span className="text-white text-sm font-bold">
 								{opponentResult?.agentName}
 							</span>

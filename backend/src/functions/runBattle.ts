@@ -1,5 +1,5 @@
 import { onRequest } from 'firebase-functions/v2/https';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, type DocumentReference } from 'firebase-admin/firestore';
 import type {
 	RunBattleResponse,
 	AgentProfile,
@@ -74,11 +74,14 @@ async function executeRound(
 	opponent: DummyAgent,
 	opponentUid: string,
 	judge: Judge,
+	battleRef: DocumentReference,
 ): Promise<Round> {
 	const odaiResult = await generateJsonResponse<{ odai: string }>(
 		'大喜利のお題を1つ生成してください。30文字以内で。バラエティ豊かに。JSONで出力: {"odai": "お題"}',
 	);
 	const odai = odaiResult.odai;
+
+	await battleRef.update({ currentRound: roundNumber, currentOdai: odai });
 
 	const [userBoke, opponentBoke] = await Promise.all([
 		generateBoke(odai, userName, userProfile),
@@ -87,6 +90,8 @@ async function executeRound(
 			brainData: opponent.brainData,
 		}),
 	]);
+
+	await battleRef.update({ currentThought: userBoke.intermediateThought });
 
 	const scores = await judgeRound(odai, judge, [
 		{ uid: userUid, name: userName, boke: userBoke.boke },
@@ -171,6 +176,8 @@ export const runBattle = onRequest(
 				winnerUid: '',
 				winnerBoke: '',
 				winnerImageUrl: null,
+				opponentName: opponent.name,
+				opponentStyle: opponent.style,
 			});
 
 			// 5. Round 1
@@ -182,10 +189,14 @@ export const runBattle = onRequest(
 				opponent,
 				opponentUid,
 				judge,
+				battleRef,
 			);
 			await battleRef.update({
 				status: 'round1_done',
 				rounds: [round1],
+				currentOdai: FieldValue.delete(),
+				currentThought: FieldValue.delete(),
+				currentRound: FieldValue.delete(),
 			});
 
 			// 6. Round 2
@@ -197,10 +208,14 @@ export const runBattle = onRequest(
 				opponent,
 				opponentUid,
 				judge,
+				battleRef,
 			);
 			await battleRef.update({
 				status: 'round2_done',
 				rounds: [round1, round2],
+				currentOdai: FieldValue.delete(),
+				currentThought: FieldValue.delete(),
+				currentRound: FieldValue.delete(),
 			});
 
 			// 7. Calculate total scores

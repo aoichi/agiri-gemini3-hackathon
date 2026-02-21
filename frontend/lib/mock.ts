@@ -167,6 +167,8 @@ export const mockBattleResult: Battle = {
 	winnerUid: "player",
 	winnerBoke: "お寿司がベルトコンベアに乗って出勤している",
 	winnerImageUrl: null,
+	opponentName: "爆裂ボンバー",
+	opponentStyle: "爆発",
 };
 
 export function mockBattleStatusSequence(

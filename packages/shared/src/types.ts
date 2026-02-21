@@ -56,6 +56,11 @@ export interface Battle {
 	winnerUid: string;
 	winnerBoke: string;
 	winnerImageUrl: string | null;
+	opponentName: string;
+	opponentStyle: AgentStyle;
+	currentRound?: number;
+	currentOdai?: string;
+	currentThought?: string;
 }
 
 export interface ScoreBokeRequest {
