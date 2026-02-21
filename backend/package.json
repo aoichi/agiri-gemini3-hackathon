@@ -12,7 +12,7 @@
 		"seed": "GCLOUD_PROJECT=agiri-dev FIRESTORE_EMULATOR_HOST=localhost:8080 bun run scripts/seed.ts"
 	},
 	"dependencies": {
-		"@agiri/shared": "workspace:*",
+		"@agiri/shared": "*",
 		"firebase-admin": "^13.0.0",
 		"firebase-functions": "^6.0.0",
 		"@google/generative-ai": "^0.21.0"
