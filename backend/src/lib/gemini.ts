@@ -14,7 +14,7 @@ function getClient(): GoogleGenerativeAI {
 
 export async function generateJsonResponse<T>(prompt: string): Promise<T> {
 	const model = getClient().getGenerativeModel({
-		model: 'gemini-2.0-flash',
+		model: 'gemini-2.5-flash',
 		generationConfig: { responseMimeType: 'application/json' },
 	});
 	const result = await model.generateContent(prompt);
@@ -24,7 +24,7 @@ export async function generateJsonResponse<T>(prompt: string): Promise<T> {
 export async function generateImage(prompt: string): Promise<string | null> {
 	try {
 		const model = getClient().getGenerativeModel({
-			model: 'gemini-2.0-flash-preview-image-generation',
+			model: 'gemini-3-pro-image-preview',
 		});
 		const result = await model.generateContent({
 			contents: [{ role: 'user', parts: [{ text: prompt }] }],
