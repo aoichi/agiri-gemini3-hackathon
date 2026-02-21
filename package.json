@@ -1,5 +1,8 @@
 {
 	"name": "agiri-gemini3-hackathon",
 	"private": true,
-	"workspaces": ["frontend", "backend", "packages/*"]
+	"workspaces": ["frontend", "backend", "packages/*"],
+	"devDependencies": {
+		"firebase-tools": "^15.7.0"
+	}
 }

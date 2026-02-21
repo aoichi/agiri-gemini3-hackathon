@@ -1,4 +1,4 @@
-export type { AgentProfile, AgentStyle, BrainData, AgentStats } from './types';
+export type { AgentProfile, AgentStyle, BrainData, AgentStats, Judge, DummyAgent } from './types';
 export type {
 	Battle,
 	BattleStatus,

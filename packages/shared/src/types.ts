@@ -11,10 +11,24 @@ export interface AgentStats {
 }
 
 export interface AgentProfile {
+	name: string;
 	style: AgentStyle;
 	level: number;
 	brainData: BrainData;
 	stats: AgentStats;
+}
+
+export interface Judge {
+	name: string;
+	personality: string;
+	criteria: string;
+}
+
+export interface DummyAgent {
+	name: string;
+	style: AgentStyle;
+	level: number;
+	brainData: BrainData;
 }
 
 export type BattleStatus = 'processing' | 'round1_done' | 'round2_done' | 'done';
