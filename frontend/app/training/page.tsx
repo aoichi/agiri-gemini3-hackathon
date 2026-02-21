@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { getAgent } from "@/lib/firestore";
 import { generateOdai, scoreBoke, analyzeAndUpdateBrain } from "@/lib/api";
 
-type Phase = "loading" | "input" | "scoring" | "scored" | "analyzing" | "done";
+type Phase = "loading" | "input" | "scoring" | "scored" | "analyzing" | "done" | "error";
 
 interface QuestionResult {
 	odai: string;
@@ -35,33 +35,52 @@ export default function Training() {
 		newTraits: unknown[];
 		levelUp: boolean;
 	} | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
+	const [phaseBeforeError, setPhaseBeforeError] = useState<Phase>("loading");
 
 	const totalQuestions = 2;
 
+	const handleError = (e: unknown, fallbackPhase: Phase) => {
+		const msg = e instanceof Error ? e.message : "エラーが発生しました";
+		setErrorMsg(msg);
+		setPhaseBeforeError(fallbackPhase);
+		setPhase("error");
+	};
+
 	const startTraining = async () => {
 		setPhase("loading");
-		const res = await generateOdai();
-		setOdaiList(res.odaiList);
-		setPhase("input");
+		setErrorMsg(null);
+		try {
+			const res = await generateOdai();
+			setOdaiList(res.odaiList);
+			setPhase("input");
+		} catch (e) {
+			handleError(e, "loading");
+		}
 	};
 
 	const handleSubmit = async () => {
 		if (!boke.trim() || !agent) return;
 		setPhase("scoring");
-		const res = await scoreBoke({
-			odai: odaiList[currentQ],
-			boke,
-			agentProfile: {
-				style: agent.style,
-				brainData: agent.brainData,
-			},
-		});
-		setCurrentScore(res);
-		setResults((prev) => [
-			...prev,
-			{ odai: odaiList[currentQ], boke, score: res.score, advice: res.advice },
-		]);
-		setPhase("scored");
+		setErrorMsg(null);
+		try {
+			const res = await scoreBoke({
+				odai: odaiList[currentQ],
+				boke,
+				agentProfile: {
+					style: agent.style,
+					brainData: agent.brainData,
+				},
+			});
+			setCurrentScore(res);
+			setResults((prev) => [
+				...prev,
+				{ odai: odaiList[currentQ], boke, score: res.score, advice: res.advice },
+			]);
+			setPhase("scored");
+		} catch (e) {
+			handleError(e, "input");
+		}
 	};
 
 	const handleNext = async () => {
@@ -73,23 +92,38 @@ export default function Training() {
 		} else {
 			if (!uid) return;
 			setPhase("analyzing");
-			const allResults = [
-				...results,
-				{ odai: odaiList[currentQ], boke, score: currentScore?.score ?? 0 },
-			];
-			const res = await analyzeAndUpdateBrain({
-				uid,
-				session: allResults.map((r) => ({
-					odai: r.odai,
-					boke: r.boke,
-					score: r.score,
-				})),
-			});
-			setBrainUpdate(res);
-			if (agent) {
-				setAgent({ ...agent, level: res.levelUp ? agent.level + 1 : agent.level });
+			setErrorMsg(null);
+			try {
+				const allResults = [
+					...results,
+					{ odai: odaiList[currentQ], boke, score: currentScore?.score ?? 0 },
+				];
+				const res = await analyzeAndUpdateBrain({
+					uid,
+					session: allResults.map((r) => ({
+						odai: r.odai,
+						boke: r.boke,
+						score: r.score,
+					})),
+				});
+				setBrainUpdate(res);
+				if (agent) {
+					setAgent({ ...agent, level: res.levelUp ? agent.level + 1 : agent.level });
+				}
+				setPhase("done");
+			} catch (e) {
+				handleError(e, "scored");
 			}
-			setPhase("done");
+		}
+	};
+
+	const handleRetry = () => {
+		if (phaseBeforeError === "loading") {
+			startTraining();
+		} else if (phaseBeforeError === "input") {
+			setPhase("input");
+		} else {
+			setPhase(phaseBeforeError);
 		}
 	};
 
@@ -229,6 +263,24 @@ export default function Training() {
 						message="脳みそを分析中"
 						subMessage="あなたの回答パターンを学習しています"
 					/>
+				</div>
+			)}
+
+			{/* Error */}
+			{phase === "error" && (
+				<div className="flex-1 flex flex-col items-center justify-center px-5">
+					<div className="mb-4">
+						<FluentEmoji name="warning" size={64} />
+					</div>
+					<h2 className="text-lg font-bold text-white mb-2">エラーが発生しました</h2>
+					<p className="text-gray-400 text-sm text-center mb-6">{errorMsg}</p>
+					<button
+						type="button"
+						onClick={handleRetry}
+						className="px-8 py-3 rounded-full bg-amber-500 text-gray-900 font-bold hover:bg-amber-400 active:scale-[0.98] transition-all"
+					>
+						リトライ
+					</button>
 				</div>
 			)}
 

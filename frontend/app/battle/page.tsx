@@ -18,6 +18,7 @@ export default function BattlePage() {
 	const [agent, setAgent] = useState<AgentProfile | null>(null);
 	const [phase, setPhase] = useState<Phase>("ready");
 	const [battleState, setBattleState] = useState<Partial<Battle> | null>(null);
+	const [battleId, setBattleId] = useState<string | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -30,15 +31,13 @@ export default function BattlePage() {
 		setErrorMsg(null);
 		try {
 			const { battleId } = await runBattle();
+			setBattleId(battleId);
 
 			const unsubscribe = subscribeToBattle(battleId, (battle) => {
 				setBattleState(battle);
 				if (battle.status === "done") {
 					unsubscribe();
 					setPhase("done");
-					setTimeout(() => {
-						router.push(`/battle/result/${battleId}`);
-					}, 1500);
 				}
 			});
 		} catch (e) {
@@ -253,6 +252,19 @@ export default function BattlePage() {
 						className="w-full py-4 rounded-full bg-amber-500 text-gray-900 text-lg font-bold hover:bg-amber-400 active:scale-[0.98] transition-all"
 					>
 						バトル開始!
+					</button>
+				</div>
+			)}
+
+			{/* Next button after battle ends */}
+			{phase === "done" && battleId && (
+				<div className="px-5 pb-4 animate-fade-in">
+					<button
+						type="button"
+						onClick={() => router.push(`/battle/result/${battleId}`)}
+						className="w-full py-4 rounded-full bg-amber-500 text-gray-900 text-lg font-bold hover:bg-amber-400 active:scale-[0.98] transition-all"
+					>
+						結果を見る →
 					</button>
 				</div>
 			)}

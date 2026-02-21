@@ -16,9 +16,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-let emulatorsConnected = false;
-if (typeof window !== 'undefined' && !emulatorsConnected && process.env.NODE_ENV === 'development') {
-	emulatorsConnected = true;
+const g = globalThis as unknown as { __FIREBASE_EMULATORS_CONNECTED?: boolean };
+if (typeof window !== 'undefined' && !g.__FIREBASE_EMULATORS_CONNECTED && process.env.NODE_ENV === 'development') {
+	g.__FIREBASE_EMULATORS_CONNECTED = true;
 	connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
 	connectFirestoreEmulator(db, 'localhost', 8080);
 }

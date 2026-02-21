@@ -50,6 +50,9 @@ export default function CreateAgent() {
 
 	const handleCreate = async () => {
 		if (!name.trim() || !selected || !uid) return;
+		if (hasExistingAgent && !window.confirm("既存のエージェントデータが上書きされます. よろしいですか?")) {
+			return;
+		}
 		setIsCreating(true);
 		try {
 			await createAgent(uid, {

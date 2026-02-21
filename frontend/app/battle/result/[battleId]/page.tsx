@@ -18,7 +18,6 @@ export default function BattleResult() {
 	const [battle, setBattle] = useState<Battle | null>(null);
 	const [showContent, setShowContent] = useState(false);
 	const [showDetails, setShowDetails] = useState(false);
-	const [showLevelUp, setShowLevelUp] = useState(false);
 
 	useEffect(() => {
 		if (authLoading || !uid) return;
@@ -37,11 +36,9 @@ export default function BattleResult() {
 		if (!battle) return;
 		const t1 = setTimeout(() => setShowContent(true), 300);
 		const t2 = setTimeout(() => setShowDetails(true), 800);
-		const t3 = setTimeout(() => setShowLevelUp(true), 1500);
 		return () => {
 			clearTimeout(t1);
 			clearTimeout(t2);
-			clearTimeout(t3);
 		};
 	}, [battle]);
 
@@ -187,18 +184,7 @@ export default function BattleResult() {
 					))}
 				</div>
 
-				{/* Level up */}
-				{showLevelUp && isWinner && (
-					<div className="animate-bounce-in mb-6">
-						<div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 text-center">
-							<p className="text-green-400 font-bold">
-								{isWinner ? "勝利!" : "惜しい!"}
-							</p>
-						</div>
-					</div>
-				)}
-
-				{/* Back button */}
+					{/* Back button */}
 				<button
 					type="button"
 					onClick={() => router.push("/main")}

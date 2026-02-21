@@ -3,7 +3,7 @@
 import type { AgentProfile } from "@agiri/shared";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BrainLoader from "@/components/BrainLoader";
 import FluentEmoji from "@/components/FluentEmoji";
 import { STYLE_FACE, STYLE_ICONS } from "@/lib/mock";
@@ -16,8 +16,8 @@ export default function Main() {
 	const [agent, setAgent] = useState<AgentProfile | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		if (authLoading || !uid) return;
+	const fetchAgent = useCallback(() => {
+		if (!uid) return;
 		getAgent(uid).then((a) => {
 			if (!a) {
 				router.replace("/create");
@@ -26,7 +26,18 @@ export default function Main() {
 			setAgent(a);
 			setLoading(false);
 		}).catch(console.error);
-	}, [uid, authLoading, router]);
+	}, [uid, router]);
+
+	useEffect(() => {
+		if (authLoading || !uid) return;
+		fetchAgent();
+	}, [uid, authLoading, fetchAgent]);
+
+	useEffect(() => {
+		const onFocus = () => fetchAgent();
+		window.addEventListener("focus", onFocus);
+		return () => window.removeEventListener("focus", onFocus);
+	}, [fetchAgent]);
 
 	if (loading || !agent) {
 		return (

@@ -180,6 +180,8 @@ export const runBattle = onRequest(
 				opponentStyle: opponent.style,
 			});
 
+			res.json({ battleId } satisfies RunBattleResponse);
+
 			// 5. Round 1
 			const round1 = await executeRound(
 				1,
@@ -270,12 +272,11 @@ export const runBattle = onRequest(
 					level: FieldValue.increment(1),
 				});
 
-			// 11. Return battleId
-			const response: RunBattleResponse = { battleId };
-			res.json(response);
 		} catch (error) {
 			console.error('runBattle error:', error);
-			res.status(500).json({ error: 'Internal server error' });
+			if (!res.headersSent) {
+				res.status(500).json({ error: 'Internal server error' });
+			}
 		}
 	},
 );
