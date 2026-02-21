@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import FluentEmoji from "@/components/FluentEmoji";
 import {
+	mockAgent,
+	mockAnalyzeAndUpdateBrain,
 	mockGenerateOdai,
 	mockScoreBoke,
-	mockAnalyzeAndUpdateBrain,
-	mockAgent,
-} from '@/lib/mock';
+} from "@/lib/mock";
 
-type Phase = 'loading' | 'input' | 'scoring' | 'scored' | 'analyzing' | 'done';
+type Phase = "loading" | "input" | "scoring" | "scored" | "analyzing" | "done";
 
 interface QuestionResult {
 	odai: string;
@@ -20,10 +21,10 @@ interface QuestionResult {
 
 export default function Training() {
 	const router = useRouter();
-	const [phase, setPhase] = useState<Phase>('loading');
+	const [phase, setPhase] = useState<Phase>("loading");
 	const [odaiList, setOdaiList] = useState<string[]>([]);
 	const [currentQ, setCurrentQ] = useState(0);
-	const [boke, setBoke] = useState('');
+	const [boke, setBoke] = useState("");
 	const [, setResults] = useState<QuestionResult[]>([]);
 	const [currentScore, setCurrentScore] = useState<{
 		score: number;
@@ -37,35 +38,35 @@ export default function Training() {
 	const totalQuestions = 2;
 
 	const startTraining = async () => {
-		setPhase('loading');
+		setPhase("loading");
 		const res = await mockGenerateOdai();
 		setOdaiList(res.odaiList);
-		setPhase('input');
+		setPhase("input");
 	};
 
 	const handleSubmit = async () => {
 		if (!boke.trim()) return;
-		setPhase('scoring');
+		setPhase("scoring");
 		const res = await mockScoreBoke(boke);
 		setCurrentScore(res);
 		setResults((prev) => [
 			...prev,
 			{ odai: odaiList[currentQ], boke, score: res.score, advice: res.advice },
 		]);
-		setPhase('scored');
+		setPhase("scored");
 	};
 
 	const handleNext = async () => {
 		if (currentQ + 1 < totalQuestions) {
 			setCurrentQ((prev) => prev + 1);
-			setBoke('');
+			setBoke("");
 			setCurrentScore(null);
-			setPhase('input');
+			setPhase("input");
 		} else {
-			setPhase('analyzing');
+			setPhase("analyzing");
 			const res = await mockAnalyzeAndUpdateBrain();
 			setBrainUpdate(res);
-			setPhase('done');
+			setPhase("done");
 		}
 	};
 
@@ -75,7 +76,7 @@ export default function Training() {
 			initialized.current = true;
 			startTraining();
 		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (
@@ -84,23 +85,10 @@ export default function Training() {
 			<div className="flex items-center justify-between px-5 pt-5 pb-3">
 				<button
 					type="button"
-					onClick={() => router.push('/main')}
-					className="text-gray-400 hover:text-white transition-colors"
+					onClick={() => router.push("/main")}
+					className="opacity-70 hover:opacity-100 transition-opacity"
 				>
-					<svg
-						aria-hidden="true"
-						className="w-6 h-6"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M15 19l-7-7 7-7"
-						/>
-					</svg>
+					<FluentEmoji name="back-arrow" size={26} />
 				</button>
 				<h1 className="text-lg font-bold text-white">修行</h1>
 				<span className="text-gray-400 text-sm">
@@ -109,7 +97,7 @@ export default function Training() {
 			</div>
 
 			{/* Loading - centered */}
-			{phase === 'loading' && (
+			{phase === "loading" && (
 				<div className="flex-1 flex flex-col items-center justify-center px-5">
 					<div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
 					<p className="text-gray-400 mt-4 text-sm">お題を準備中...</p>
@@ -117,14 +105,14 @@ export default function Training() {
 			)}
 
 			{/* Input / Scoring / Scored */}
-			{(phase === 'input' || phase === 'scoring' || phase === 'scored') && (
+			{(phase === "input" || phase === "scoring" || phase === "scored") && (
 				<>
 					{/* Content area */}
 					<div className="flex-1 px-5 overflow-y-auto">
 						{/* Odai card */}
 						<div className="bg-gray-800 rounded-2xl p-5 mb-6">
-							<span className="inline-block px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs font-bold rounded mb-3">
-								🎯 お題
+							<span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs font-bold rounded mb-3">
+								<FluentEmoji name="bullseye" size={14} /> お題
 							</span>
 							<h2 className="text-xl font-extrabold text-white leading-snug">
 								「{odaiList[currentQ]}」
@@ -140,18 +128,18 @@ export default function Training() {
 								value={boke}
 								onChange={(e) => setBoke(e.target.value)}
 								placeholder="ボケを入力してください..."
-								disabled={phase !== 'input'}
+								disabled={phase !== "input"}
 								className="w-full h-28 p-4 bg-gray-800 border border-gray-700 rounded-2xl text-white placeholder-gray-600 resize-none focus:outline-none focus:border-amber-500 transition-colors disabled:opacity-60"
 							/>
 						</div>
 
 						{/* Score result */}
-						{phase === 'scored' && currentScore && (
+						{phase === "scored" && currentScore && (
 							<div className="animate-slide-up border-2 border-amber-500/50 bg-gray-800 rounded-2xl p-5 mb-4">
 								<div className="flex items-center justify-between mb-3">
 									<h3 className="text-white font-bold">採点結果</h3>
 									<span className="text-2xl font-extrabold text-amber-500">
-										{currentScore.score}{' '}
+										{currentScore.score}{" "}
 										<span className="text-base text-gray-400">/ 100</span>
 									</span>
 								</div>
@@ -164,34 +152,34 @@ export default function Training() {
 
 					{/* Bottom button - pinned */}
 					<div className="px-5 pb-6 pt-3">
-						{phase === 'scored' ? (
+						{phase === "scored" ? (
 							<button
 								type="button"
 								onClick={handleNext}
 								className="w-full py-4 rounded-full bg-amber-500 text-gray-900 text-lg font-bold hover:bg-amber-400 active:scale-[0.98] transition-all"
 							>
 								{currentQ + 1 < totalQuestions
-									? '次のお題へ'
-									: '修行を完了する'}
+									? "次のお題へ"
+									: "修行を完了する"}
 							</button>
 						) : (
 							<button
 								type="button"
 								onClick={handleSubmit}
-								disabled={phase !== 'input' || !boke.trim()}
+								disabled={phase !== "input" || !boke.trim()}
 								className={`w-full py-4 rounded-full text-lg font-bold transition-all duration-200 ${
-									phase === 'input' && boke.trim()
-										? 'bg-amber-500 text-gray-900 hover:bg-amber-400 active:scale-[0.98]'
-										: 'bg-gray-700 text-gray-500 cursor-not-allowed'
+									phase === "input" && boke.trim()
+										? "bg-amber-500 text-gray-900 hover:bg-amber-400 active:scale-[0.98]"
+										: "bg-gray-700 text-gray-500 cursor-not-allowed"
 								}`}
 							>
-								{phase === 'scoring' ? (
+								{phase === "scoring" ? (
 									<span className="flex items-center justify-center gap-2">
 										<span className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
 										採点中...
 									</span>
 								) : (
-									'回答する'
+									"回答する"
 								)}
 							</button>
 						)}
@@ -200,12 +188,12 @@ export default function Training() {
 			)}
 
 			{/* Analyzing - centered */}
-			{phase === 'analyzing' && (
+			{phase === "analyzing" && (
 				<div className="flex-1 flex flex-col items-center justify-center px-5">
-					<div className="text-5xl mb-4 animate-bounce">🧠</div>
-					<p className="text-amber-500 font-bold text-lg">
-						脳みそを分析中...
-					</p>
+					<div className="mb-4 animate-bounce">
+						<FluentEmoji name="brain" size={88} />
+					</div>
+					<p className="text-amber-500 font-bold text-lg">脳みそを分析中...</p>
 					<p className="text-gray-400 text-sm mt-2">
 						あなたの回答パターンを学習しています
 					</p>
@@ -213,10 +201,12 @@ export default function Training() {
 			)}
 
 			{/* Done - centered */}
-			{phase === 'done' && brainUpdate && (
+			{phase === "done" && brainUpdate && (
 				<>
 					<div className="flex-1 flex flex-col items-center justify-center px-5 animate-fade-in">
-						<div className="text-5xl mb-4">🧠</div>
+						<div className="mb-4">
+							<FluentEmoji name="brain" size={88} />
+						</div>
 						<h2 className="text-xl font-extrabold text-white mb-2">
 							修行完了!
 						</h2>
@@ -245,7 +235,7 @@ export default function Training() {
 					<div className="px-5 pb-6 pt-3">
 						<button
 							type="button"
-							onClick={() => router.push('/main')}
+							onClick={() => router.push("/main")}
 							className="w-full py-4 rounded-full bg-amber-500 text-gray-900 text-lg font-bold hover:bg-amber-400 active:scale-[0.98] transition-all"
 						>
 							メインに戻る

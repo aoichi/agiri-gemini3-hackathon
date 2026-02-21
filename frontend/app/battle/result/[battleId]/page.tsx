@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { mockBattleResult, mockAgent, STYLE_ICONS } from '@/lib/mock';
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import FluentEmoji from "@/components/FluentEmoji";
+import { mockAgent, mockBattleResult, STYLE_ICONS } from "@/lib/mock";
 
 export default function BattleResult() {
 	const router = useRouter();
@@ -12,12 +13,12 @@ export default function BattleResult() {
 
 	const battle = mockBattleResult;
 	const playerResult = battle.rounds[0]?.results.find(
-		(r) => r.uid === 'player',
+		(r) => r.uid === "player",
 	);
 	const opponentResult = battle.rounds[0]?.results.find(
-		(r) => r.uid === 'opponent',
+		(r) => r.uid === "opponent",
 	);
-	const isWinner = battle.winnerUid === 'player';
+	const isWinner = battle.winnerUid === "player";
 
 	useEffect(() => {
 		const t1 = setTimeout(() => setShowContent(true), 300);
@@ -34,15 +35,13 @@ export default function BattleResult() {
 		<div className="flex flex-col min-h-screen">
 			{/* Header */}
 			<div className="px-5 pt-5 pb-3">
-				<h1 className="text-lg font-bold text-white text-center">
-					バトル結果
-				</h1>
+				<h1 className="text-lg font-bold text-white text-center">バトル結果</h1>
 			</div>
 
 			<div className="flex-1 px-5 pb-8 overflow-y-auto">
 				{/* Winner card */}
 				<div
-					className={`bg-amber-500 rounded-2xl p-6 mb-6 text-center transition-all duration-700 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+					className={`bg-amber-500 rounded-2xl p-6 mb-6 text-center transition-all duration-700 ${showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
 				>
 					<p className="text-gray-900 font-extrabold text-2xl mb-1">WINNER</p>
 					<p className="text-gray-900 font-bold text-lg mb-2">
@@ -53,22 +52,20 @@ export default function BattleResult() {
 
 				{/* Scores */}
 				<div
-					className={`grid grid-cols-2 gap-4 mb-6 transition-all duration-700 delay-200 ${showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+					className={`grid grid-cols-2 gap-4 mb-6 transition-all duration-700 delay-200 ${showDetails ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
 				>
 					{/* Player score */}
 					<div
-						className={`p-4 rounded-2xl text-center border ${isWinner ? 'bg-amber-500/10 border-amber-500/40' : 'bg-gray-800 border-gray-700'}`}
+						className={`p-4 rounded-2xl text-center border ${isWinner ? "bg-amber-500/10 border-amber-500/40" : "bg-gray-800 border-gray-700"}`}
 					>
 						<div className="flex items-center justify-center gap-1 mb-2">
-							<span className="text-sm">
-								{STYLE_ICONS[mockAgent.style]}
-							</span>
+							<FluentEmoji name={STYLE_ICONS[mockAgent.style]} size={20} />
 							<span className="text-white text-sm font-bold">
 								{playerResult?.agentName}
 							</span>
 						</div>
 						<p
-							className={`text-4xl font-extrabold ${isWinner ? 'text-amber-500' : 'text-white'}`}
+							className={`text-4xl font-extrabold ${isWinner ? "text-amber-500" : "text-white"}`}
 						>
 							{battle.totalScores.player}
 						</p>
@@ -77,16 +74,16 @@ export default function BattleResult() {
 
 					{/* Opponent score */}
 					<div
-						className={`p-4 rounded-2xl text-center border ${!isWinner ? 'bg-amber-500/10 border-amber-500/40' : 'bg-gray-800 border-gray-700'}`}
+						className={`p-4 rounded-2xl text-center border ${!isWinner ? "bg-amber-500/10 border-amber-500/40" : "bg-gray-800 border-gray-700"}`}
 					>
 						<div className="flex items-center justify-center gap-1 mb-2">
-							<span className="text-sm">💥</span>
+							<FluentEmoji name="collision" size={28} />
 							<span className="text-white text-sm font-bold">
 								{opponentResult?.agentName}
 							</span>
 						</div>
 						<p
-							className={`text-4xl font-extrabold ${!isWinner ? 'text-amber-500' : 'text-white'}`}
+							className={`text-4xl font-extrabold ${!isWinner ? "text-amber-500" : "text-white"}`}
 						>
 							{battle.totalScores.opponent}
 						</p>
@@ -96,7 +93,7 @@ export default function BattleResult() {
 
 				{/* Winner image or fallback */}
 				<div
-					className={`mb-6 transition-all duration-700 delay-300 ${showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+					className={`mb-6 transition-all duration-700 delay-300 ${showDetails ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
 				>
 					{battle.winnerImageUrl ? (
 						<div className="rounded-2xl overflow-hidden">
@@ -109,10 +106,10 @@ export default function BattleResult() {
 						</div>
 					) : (
 						<div className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-2xl p-6 text-center">
-							<p className="text-5xl mb-3">🎉</p>
-							<p className="text-white font-bold">
-								「{battle.winnerBoke}」
-							</p>
+							<div className="flex justify-center mb-3">
+								<FluentEmoji name="party-popper" size={88} />
+							</div>
+							<p className="text-white font-bold">「{battle.winnerBoke}」</p>
 							<p className="text-gray-400 text-sm mt-2">
 								Best Boke of the Match
 							</p>
@@ -122,7 +119,7 @@ export default function BattleResult() {
 
 				{/* Round details */}
 				<div
-					className={`mb-6 transition-all duration-700 delay-500 ${showDetails ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+					className={`mb-6 transition-all duration-700 delay-500 ${showDetails ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
 				>
 					{battle.rounds.map((round) => (
 						<div
@@ -161,9 +158,7 @@ export default function BattleResult() {
 				{showLevelUp && (
 					<div className="animate-bounce-in mb-6">
 						<div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 text-center">
-							<p className="text-green-400 font-bold">
-								レベルアップ!
-							</p>
+							<p className="text-green-400 font-bold">レベルアップ!</p>
 							<p className="text-green-300 text-sm">
 								Lv.{mockAgent.level} → Lv.{mockAgent.level + 1}
 							</p>
@@ -174,7 +169,7 @@ export default function BattleResult() {
 				{/* Back button */}
 				<button
 					type="button"
-					onClick={() => router.push('/main')}
+					onClick={() => router.push("/main")}
 					className="w-full py-4 rounded-full bg-amber-500 text-gray-900 text-lg font-bold hover:bg-amber-400 active:scale-[0.98] transition-all"
 				>
 					メインに戻る
