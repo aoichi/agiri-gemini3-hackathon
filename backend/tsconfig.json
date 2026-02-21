@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    // Custom conditions for module resolution
+    "customConditions": ["@growthverse/development"],
+    // Environment setup & latest features
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "esModuleInterop": true,
+    "types": [
+      // add Bun global
+      "bun-types"
+    ],
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+
+    // Build Settings
+    "noEmit": true,
+    "sourceMap": false,
+
+    // Linting & Type Safety
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false
+  },
+  "include": ["src", "scripts"],
+  "exclude": ["node_modules", "dist"]
+}

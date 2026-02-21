@@ -1,0 +1,5 @@
+{
+	"name": "agiri-gemini3-hackathon",
+	"private": true,
+	"workspaces": ["frontend", "backend", "packages/*"]
+}

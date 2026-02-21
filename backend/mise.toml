@@ -1,0 +1,14 @@
+[tools]
+bun = "1"
+lefthook = "1"
+
+[env]
+BIN_PATH = "{{ config_root }}/node_modules/.bin"
+# Set up the path for node module binaries
+_.path = ["{{env.BIN_PATH}}"]
+
+[settings]
+experimental = true
+
+[settings.npm]
+bun = true

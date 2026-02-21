@@ -1,0 +1,29 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# node
+node_modules
+
+# generated
+**/.gen/**
+
+# build
+dist
+.next
+out
+*.tsbuildinfo
+
+# firebase
+.firebase
+
+# env
+.env
+.env.*
+!.env.sample
+
+agiri-spec.md
+
+.github
+.lefthook
+.vscode
